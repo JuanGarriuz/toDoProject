@@ -1,0 +1,24 @@
+.my-panel {
+  position: relative;
+}
+
+.my-panel-actions {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 8px;
+}
+
+.my-form-add {
+  display: flex;
+  justify-content: center;
+}
+
+.my-panel-scroll {
+  height: 70vh;
+  overflow-y: auto;
+}
+
+.my-panel-content {
+  padding-right: 16px;
+}
