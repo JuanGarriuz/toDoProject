@@ -12,8 +12,16 @@ import {
 } from '@elastic/eui';
 import update_todo from './serverActions/updateToDo';
 import React from 'react';
+import { todo_interface } from './interfaces/todo_interface';
 
-export function ToDoUpdateForm({ toDo, setToStartListener, setInProgressListener, setCompletedListener }) {
+interface toDoUpdateFormProps {
+    toDo: todo_interface,
+    setToStartListener:React.Dispatch<React.SetStateAction<number>>,
+    setInProgressListener: React.Dispatch<React.SetStateAction<number>>,
+    setCompletedListener: React.Dispatch<React.SetStateAction<number>>,
+}
+
+export function ToDoUpdateForm({ toDo, setToStartListener, setInProgressListener, setCompletedListener }:toDoUpdateFormProps) {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
     const handleButtonClick = () => {
@@ -27,8 +35,8 @@ export function ToDoUpdateForm({ toDo, setToStartListener, setInProgressListener
     const [toDoDescription, setToDoDescriptionValue] = useState(toDo._source.description);
     const [selectedState, setSelectedState] = useState(toDo._source.state);
 
-    const handleSelectChange = (e) => {
-        setSelectedState(e.target.value);
+    const handleSelectChange = (event) => {
+        setSelectedState(event.target.value);
     };
 
     const handleSubmit = async (event: { preventDefault: () => void; }) => {
@@ -46,7 +54,7 @@ export function ToDoUpdateForm({ toDo, setToStartListener, setInProgressListener
                 break;
         }
         if (selectedState != toDo._source.state) {
-            switch (selectedState) {
+            switch (toDo._source.state) {
                 case ("toStart"):
                     setToStartListener(new Date().getTime());
                     break;
@@ -58,9 +66,6 @@ export function ToDoUpdateForm({ toDo, setToStartListener, setInProgressListener
                     break;
             }
         }
-        setToDoTitleValue(toDo._source.title);
-        setToDoDescriptionValue(toDo._source.description);
-        setSelectedState(toDo._source.state);
     };
 
     const handleChange = (event) => {

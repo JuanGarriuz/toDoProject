@@ -1,8 +1,14 @@
 import React from "react"
 import delete_todo from './serverActions/deleteToDo'
 import { EuiButtonIcon } from "@elastic/eui";
+import { todo_interface } from "./interfaces/todo_interface";
 
-export function ToDoDeleteButton({ toDo, listener }) {
+interface toDoDeleteProps{
+    toDo:todo_interface,
+    listener: React.Dispatch<React.SetStateAction<number>>
+}
+
+export function ToDoDeleteButton( {toDo, listener}:toDoDeleteProps ) {
 
     const toDoDelete = {
         _id: toDo._id,

@@ -1,8 +1,16 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import post_todo from './serverActions/postToDo'
 import { EuiButton, EuiButtonIcon, EuiFieldText, EuiFlexGroup, EuiFlexItem, EuiForm, EuiFormRow, EuiPopover, EuiPopoverTitle, EuiTextArea } from "@elastic/eui";
+import { CoreStart } from "opensearch-dashboards/public";
 
-export function FormToDo({ http, listener, toDoState }) {
+interface formToDoProps {
+    http:CoreStart['http'],
+    setListener: React.Dispatch<React.SetStateAction<number>>,
+    toDoState: "toStart" | "inProgress" | "completed"
+}
+
+
+export function FormToDo({ http, setListener, toDoState }:formToDoProps) {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
     const handleButtonClick = () => {
@@ -14,20 +22,20 @@ export function FormToDo({ http, listener, toDoState }) {
     const [toDoTitle, setToDoTitleValue] = useState('');
     const [toDoDescription, setToDoDescriptionValue] = useState('');
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         if (toDoTitle != "" && toDoDescription != "") {
             await post_todo(toDoTitle, toDoDescription, toDoState);
-            listener(new Date().getTime());
+            setListener(new Date().getTime());
             setToDoTitleValue("");
             setToDoDescriptionValue("");
-        }else{
+        } else {
             alert("Introduce valores para proceder");
         }
 
     };
 
-    const handleChange = (event) => {
+    const handleChange = (event: { target: { name: string; value: string; }; }) => {
         const { name, value } = event.target;
         switch (name) {
             case 'title':

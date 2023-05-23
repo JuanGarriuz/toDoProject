@@ -8,4 +8,3 @@ export function plugin() {
   return new CustomPluginPlugin();
 }
 export { CustomPluginPluginSetup, CustomPluginPluginStart } from './types';
-console.log("Hola");

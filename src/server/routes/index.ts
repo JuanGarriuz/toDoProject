@@ -1,5 +1,6 @@
 import { schema } from '@osd/config-schema';
 import { IRouter } from '../../../../src/core/server';
+import { SearchSortOrder, SearchFieldSort } from '@opensearch-project/opensearch/api/types';
 
 export function defineRoutes(router: IRouter) {
 
@@ -10,12 +11,13 @@ export function defineRoutes(router: IRouter) {
         query: schema.object({
           toDoState: schema.string(),
           offSet: schema.number(),
-          size: schema.number()
+          size: schema.number(),
+          sortOrder: schema.string(),
         }),
       }
     },
     async (context, request, response) => {
-      const { toDoState, offSet, size } = request.query;
+      const { toDoState, offSet, size, sortOrder } = request.query;
       // Check if the index exists
       try {
         const existsIndex = await context.core.opensearch.client.asCurrentUser.indices.exists({
@@ -30,9 +32,14 @@ export function defineRoutes(router: IRouter) {
       } catch (errExists) {
         console.log(errExists);
       }
-      // Make a search
+      var sortQuery:SearchSortOrder | SearchFieldSort;
+      if(sortOrder=="desc"){
+        sortQuery = "desc";
+      }else{
+        sortQuery = "asc"
+      }
       const responseItems = await context.core.opensearch.client.asCurrentUser.search({
-        size: size || 5,
+        size: size >= 5 ? size : 5,
         from: offSet,
         index: "todos",
         body: {
@@ -41,16 +48,13 @@ export function defineRoutes(router: IRouter) {
               state: toDoState,
             },
           },
-          sort: [
-            { "date": "asc" }
-          ]
+          sort: [{ "date": sortQuery }],
         },
       });
 
-
       return response.ok({
         body: {
-          items: responseItems.body.hits.hits,
+          toDos: responseItems.body.hits.hits,
           totalHits: responseItems.body.hits.hits.length
         },
       });
