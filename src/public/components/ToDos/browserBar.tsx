@@ -1,19 +1,26 @@
-import React, { useState } from 'react';
-import { EuiFieldSearch, EuiListGroup, EuiListGroupItem } from '@elastic/eui';
+import React, { useEffect, useState } from 'react';
+import { EuiFieldSearch, EuiFlexGroup, EuiFlexItem, EuiListGroup, EuiPanel, EuiSpacer, EuiText } from '@elastic/eui';
 import { todo_interface } from './interfaces/todo_interface';
+import { ToDoDeleteButton } from './toDoDeleteButton';
+import { ToDoUpdateForm } from './toDoUpdateForm';
 
-export default function toDoBrowser(listToDos:{listToDos:todo_interface[]}){
+
+export default function ToDoBrowser({ listeners, listAllToDos }) {
     const [searchText, setSearchText] = useState('');
     const [searchResults, setSearchResults] = useState<todo_interface[]>([]);
+    
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { value } = e.target;
         setSearchText(value);
-        console.log(listToDos);
-        const filteredResults = listToDos.listToDos.filter((toDo) =>
-            toDo._source.title.toLowerCase().includes(value.toLowerCase())
-        );
-        setSearchResults(filteredResults);
+         if (value.trim() === '') {
+            setSearchResults([]);
+        } else {
+            const filteredResults = listAllToDos.filter((toDo:todo_interface) =>
+                toDo._source.title.toLowerCase().includes(value.toLowerCase())
+            );
+            setSearchResults(filteredResults);
+        }
     };
 
     return (
@@ -23,13 +30,46 @@ export default function toDoBrowser(listToDos:{listToDos:todo_interface[]}){
                 placeholder="Search..."
                 onChange={handleSearchChange}
             />
-            {(
+            {searchResults.length > 0 && (
                 <EuiListGroup>
-                    {searchResults.map((data) => (
-                        <EuiListGroupItem key={data._id} label={data._source.title}>{data._source.title}</EuiListGroupItem>
-                    ))}
+                    {searchResults.map((toDo) => {
+                        var setListener: React.Dispatch<React.SetStateAction<number>>;
+                        switch (toDo._source.state) {
+                            case ("toStart"):
+                                setListener = listeners.setToStartListener;
+                                break;
+                            case ("inProgress"):
+                                setListener = listeners.setInProgressListener;
+                                break;
+                            case("completed"):
+                                setListener = listeners.setCompletedListener;
+                                break;
+                            default:
+                                setListener = listeners.setToStartListener;
+                                break;
+                        }
+                        return (
+                            <EuiFlexGroup key={toDo._id} style={{ padding: '16px' }} gutterSize="l">
+                                <EuiFlexItem>
+                                    <EuiPanel className="my-panel">
+                                        <EuiText>
+                                            <h1>{toDo._source.title}</h1>
+                                            <EuiSpacer />
+                                            <EuiText>
+                                                <p>{toDo._source.description}</p>
+                                            </EuiText>
+                                        </EuiText>
+                                        <div className="my-panel-actions">
+                                            <ToDoDeleteButton toDo={toDo} listener={setListener} />
+                                            <ToDoUpdateForm toDo={toDo} setToStartListener={listeners.setToStartListener} setInProgressListener={listeners.setInProgressListener} setCompletedListener={listeners.setCompletedListener} />
+                                        </div>
+                                    </EuiPanel>
+                                </EuiFlexItem>
+                            </EuiFlexGroup>
+                        )
+                    })}
                 </EuiListGroup>
             )}
         </div>
     );
-};
+}

@@ -1,4 +1,3 @@
-
 export interface todo_interface {
     _id: string,
     _source: {

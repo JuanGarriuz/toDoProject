@@ -6,6 +6,10 @@
     "build": "yarn plugin-helpers build",
     "plugin-helpers": "node ../../scripts/plugin_helpers",
     "osd": "node ../../scripts/osd",
-    "test": "node test/jest"
+    "test": "node ./test/jest"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0"
   }
 }

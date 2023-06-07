@@ -1,6 +1,6 @@
 import { schema } from '@osd/config-schema';
 import { IRouter } from '../../../../src/core/server';
-import { SearchSortOrder, SearchFieldSort } from '@opensearch-project/opensearch/api/types';
+import { SearchSortOrder, SearchFieldSort, SearchSortContainerKeys } from '@opensearch-project/opensearch/api/types';
 
 export function defineRoutes(router: IRouter) {
 
@@ -32,12 +32,25 @@ export function defineRoutes(router: IRouter) {
       } catch (errExists) {
         console.log(errExists);
       }
-      var sortQuery:SearchSortOrder | SearchFieldSort;
-      if(sortOrder=="desc"){
-        sortQuery = "desc";
-      }else{
-        sortQuery = "asc"
+      let sortQuery: string | any[] | SearchSortContainerKeys | { [property: string]: SearchSortOrder | SearchFieldSort; } | undefined;
+      switch (sortOrder) {
+        case "dateDesc":
+          sortQuery = [{ date: { order: "desc" } }];
+          break;
+        case "dateAsc":
+          sortQuery = [{ date: { order: "asc" } }];
+          break;
+        case "titleDesc":
+          sortQuery = [{ title: { order: "desc" } }];
+          break;
+        case "titleAsc":
+          sortQuery = [{ title: { order: "asc" } }];
+          break;
+        default:
+          sortQuery = [];
+          break;
       }
+
       const responseItems = await context.core.opensearch.client.asCurrentUser.search({
         size: size >= 5 ? size : 5,
         from: offSet,
@@ -48,7 +61,7 @@ export function defineRoutes(router: IRouter) {
               state: toDoState,
             },
           },
-          sort: [{ "date": sortQuery }],
+          sort: sortQuery.length > 0 ? sortQuery : undefined,
         },
       });
 
@@ -60,6 +73,108 @@ export function defineRoutes(router: IRouter) {
       });
     }
   );
+
+
+  router.get(
+    {
+      path: '/api/custom_plugin/getAllToDos',
+      validate: false,
+    },
+    async (context, request, response) => {
+      // Check if the index exists
+      try {
+        const existsIndex = await context.core.opensearch.client.asCurrentUser.indices.exists({
+          index: "todos"
+        });
+
+        if (!existsIndex.body) {
+          await context.core.opensearch.client.asCurrentUser.indices.create({
+            index: "todos",
+          });
+        }
+      } catch (errExists) {
+        console.log(errExists);
+      }
+
+      const searchQuery = {
+        index: 'todos',
+        body: {
+          size: 0,
+          aggs: {
+            'state': {
+              terms: {
+                field: 'state',
+              },
+            },
+          },
+        },
+      };
+
+      const responseItems = await context.core.opensearch.client.asCurrentUser.search(searchQuery);
+
+      return response.ok({
+        body: {
+          aggregations: responseItems.body.aggregations['state'].buckets,
+        },
+      });
+    }
+  );
+
+  router.get(
+    {
+      path: '/api/custom_plugin/getDateAndStateToDos',
+      validate: false,
+    },
+    async (context, request, response) => {
+      // Check if the index exists
+      try {
+        const existsIndex = await context.core.opensearch.client.asCurrentUser.indices.exists({
+          index: "todos"
+        });
+
+        if (!existsIndex.body) {
+          await context.core.opensearch.client.asCurrentUser.indices.create({
+            index: "todos",
+          });
+        }
+      } catch (errExists) {
+        console.log(errExists);
+      }
+
+      const searchQuery = {
+        index: 'todos',
+        body: {
+          size: 0,
+          aggs: {
+            'state': {
+              terms: {
+                field: 'state',
+              },
+              aggs: {
+                'date': {
+                  terms: {
+                    field: 'date',
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const responseItems = await context.core.opensearch.client.asCurrentUser.search(searchQuery);
+
+      return response.ok({
+        body: {
+          aggregations: responseItems.body.aggregations['state'].buckets.map(bucket => ({
+            state: bucket.key,
+            date: bucket.date.buckets.map(dateBucket => dateBucket.key),
+          })),
+        },
+      });
+    }
+  );
+
 
   router.post(
     {

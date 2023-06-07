@@ -10,14 +10,15 @@ interface sortToDosProps {
 export default function SortButton({ setListener, sortToDosBy, setSortToDosBy }: sortToDosProps) {
 
     const sortOptions = [
-        { value: 'asc', text: 'Date Asc', selected: sortToDosBy === 'asc' },
-        { value: 'desc', text: 'Date Desc', selected: sortToDosBy === 'desc' },
+        { value: 'dateAsc', text: 'Date Asc', selected: sortToDosBy === 'dateAsc' },
+        { value: 'dateDesc', text: 'Date Desc', selected: sortToDosBy === 'dateDesc' },
+        { value: 'titleAsc', text: 'Title Asc', selected: sortToDosBy === 'titleAsc' },
+        { value: 'titleDesc', text: 'Title Desc', selected: sortToDosBy === 'titleDesc' }
 
     ];
 
     /*
-        { value: 'titleAsc', text: 'Title Asc', selected: sortToDosBy === 'titleAsc' },
-        { value: 'titleDesc', text: 'Title Desc', selected: sortToDosBy === 'titleDesc' },
+        ,
     */
 
     const handleOptionChange = (event) => {

@@ -13,7 +13,8 @@ export function AllToDosList({ http }: CoreStart['http']) {
     handleScrollToStart,
     setToStartListener,
     sortToStartToDosBy,
-    setSortToStartToDosBy
+    setSortToStartToDosBy,
+    listAllToDosToStart,
   ] = useToDos({ http, state: "toStart" });
 
   const [
@@ -22,7 +23,8 @@ export function AllToDosList({ http }: CoreStart['http']) {
     handleScrollInProgress,
     setInProgressListener,
     sortInProgressToDosBy,
-    setSortInProgressToDosBy
+    setSortInProgressToDosBy,
+    listAllToDosInProgress
   ] = useToDos({ http, state: "inProgress" });
 
   const [
@@ -31,7 +33,8 @@ export function AllToDosList({ http }: CoreStart['http']) {
     handleScrollCompleted,
     setCompletedListener,
     sortCompletedToDosBy,
-    setSortCompletedToDosBy
+    setSortCompletedToDosBy,
+    listAllToDosCompleted,
   ] = useToDos({ http, state: "completed" });
 
   const listeners = {
@@ -42,7 +45,7 @@ export function AllToDosList({ http }: CoreStart['http']) {
 
   return (
     <>
-      <ToDoBrowser listToDos={listToDosToStart} ></ToDoBrowser>
+      <ToDoBrowser listeners={listeners} listAllToDos={listAllToDosToStart.concat(listAllToDosInProgress.concat(listAllToDosCompleted))}></ToDoBrowser>
       <EuiFlexGroup wrap>
         <ToDoList
           http={http}
